@@ -1,0 +1,52 @@
+function loadPhrases() {
+    var xmlhttp;
+
+    if (window.XMLHttpRequest) {
+        xmlhttp = new XMLHttpRequest();
+    } else {
+        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+    }
+
+    xmlhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+            console.log("back");
+
+            var responseText = this.responseText;
+            var phrasesArray = responseText.split(";");
+            
+            trainingWords = phrasesArray[0].split(",");
+            document.getElementById("nowords").innerHTML = "Total No. of training words are " + trainingWords.length;
+            practiceWords = phrasesArray[1].split(",");
+            practiceSession = phrasesArray[2].split(",");
+            mainTask1 = phrasesArray[3].split(",");
+            mainTask2 = phrasesArray[4].split(",");
+            
+            // Shuffle and limit phrases for each session
+            trainingWords = myshuffle(trainingWords);
+            practiceWords = myshuffle(practiceWords);
+            practiceSession = myshuffle(practiceSession);
+            mainTask1 = myshuffle(mainTask1);
+            mainTask2 = myshuffle(mainTask2);
+
+            // Limit phrases for each session based on nmph
+            var startIdx = toTypeArrayIndex * nmph;
+            var endIdx = startIdx + nmph;
+            toTypeArray = trainingWords.slice(startIdx, endIdx);
+
+            // Display the first phrase
+            document.getElementById("toType").innerHTML = toTypeArray[0];
+
+            console.log("array with " + nmph + " phrases: " + toTypeArray);
+            currentsesh++;
+        } else if (this.readyState == 4 && this.status != 200) {
+            console.log("Something went wrong");
+            document.getElementById("container").innerHTML = '<span class="spanWhite">Server went away. Data not saved. Error code:' + this.status + '.</span><br/><button type="button" onclick="syncToServer()">Try again</button>';
+        }
+    };
+
+    var url = "loadPhrases.php";
+    var params = "id=" + uCode + "_" + session;
+    xmlhttp.open("POST", url, true);
+    xmlhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xmlhttp.send(params);
+}
